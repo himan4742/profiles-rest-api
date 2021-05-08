@@ -1,8 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from profiles_api import serializers
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
+
+from . import serializers, permissions
+from .models import UserProfile
 
 
 class HelloApiView(APIView):
@@ -66,7 +69,7 @@ class HelloViewSet(viewsets.ViewSet):
 
         serializer = self.serializer_class(data=request.data)
 
-        if serializer.is_valid():
+        if serializer.is_valid:
             name = serializer.validated_data.get('name')
             message = f'Hello {name} !'
             return Response({'message': message})
@@ -91,3 +94,12 @@ class HelloViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         """Handle removing an object"""
         return Response({'http_method': 'DELETE'})
+
+
+class UserProfileViewset(viewsets.ModelViewSet):
+    """Handles creating and updating profiles"""
+
+    serializer_class = serializers.UserProfileSerializer
+    queryset = UserProfile.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.UpdateOwnProfile,)
